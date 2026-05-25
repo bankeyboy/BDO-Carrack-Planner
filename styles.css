@@ -730,6 +730,7 @@ h1 {
 }
 
 .process-table-wrap {
+  max-height: min(820px, 72vh);
   overflow: auto;
 }
 
@@ -1398,6 +1399,10 @@ h1 {
   display: grid;
   gap: 8px;
   margin-top: 12px;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 3px;
+  scrollbar-width: thin;
 }
 
 .plan-day {
@@ -1590,6 +1595,9 @@ h1 {
 .item-list {
   display: grid;
   gap: 10px;
+  max-height: min(980px, 72vh);
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .inventory-drawer {
@@ -1600,14 +1608,37 @@ h1 {
 }
 
 .inventory-drawer summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   cursor: pointer;
   color: var(--green);
   font-size: 15px;
   font-weight: 900;
 }
 
+.inventory-drawer summary::after {
+  content: "เปิดรายการ";
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f8fbf9;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
 .inventory-drawer[open] summary {
   margin-bottom: 12px;
+}
+
+.inventory-drawer[open] summary::after {
+  content: "ย่อรายการ";
+}
+
+.inventory-drawer:not([open]) > .item-list {
+  display: none;
 }
 
 .item-card {
@@ -1847,9 +1878,9 @@ h1 {
   .material-panel .method-buckets,
   .plan-card .today-plan,
   .plan-card .method-buckets {
-    max-height: none;
-    overflow: visible;
-    padding-right: 0;
+    max-height: 360px;
+    overflow: auto;
+    padding-right: 3px;
   }
 
   .material-panel .bucket,

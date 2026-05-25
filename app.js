@@ -581,6 +581,10 @@ function missingItems(items) {
 
 function stageProgress(items, matchWords) {
   const scoped = items.filter((item) => matchWords.some((word) => `${item.stage} ${item.name}`.includes(word)));
+  return scopedProgress(scoped);
+}
+
+function scopedProgress(scoped) {
   if (!scoped.length) return { done: 0, total: 0, pct: 0 };
   const done = scoped.filter((item) => itemMissing(item) === 0).length;
   return { done, total: scoped.length, pct: Math.round((done / scoped.length) * 100) };
@@ -892,14 +896,17 @@ function renderTodayPlan(items) {
 
 function renderRouteSteps(items) {
   const plan = routePlans[state.target] || routePlans.advance;
+  const process = processDefinitions();
   document.querySelector("#routeSteps").innerHTML = plan
     .map((step, idx) => {
-      const prog = stageProgress(items, step.match);
+      const processStep = process[idx];
+      const prog = processStep ? scopedProgress(itemsForProcessStep(items, processStep)) : stageProgress(items, step.match);
+      const title = processStep ? processStep.title.replace(/^[0-9]+\.\s*/, "") : step.title;
       const done = prog.total > 0 && prog.done === prog.total;
       return `
         <div class="route-step ${done ? "done" : ""}">
           <div class="route-dot">${idx + 1}</div>
-          <div><strong>${step.title}</strong><span>${prog.total ? `${prog.done}/${prog.total} รายการ` : "ใช้เป็นขั้นนำทาง"}</span></div>
+          <div><strong>${title}</strong><span>${prog.total ? `${prog.done}/${prog.total} รายการ` : "ใช้เป็นขั้นนำทาง"}</span></div>
           <span>${prog.pct}%</span>
         </div>`;
     })
