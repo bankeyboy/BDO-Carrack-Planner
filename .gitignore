@@ -1,0 +1,4 @@
+tmp-chrome-*/
+tools/__pycache__/
+*.pyc
+assets/verification-*.png

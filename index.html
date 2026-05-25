@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BDO Carrack Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Black Desert Online</p>
+        <h1>BDO Carrack Planner</h1>
+      </div>
+      <div class="top-actions">
+        <button id="exportBtn" class="icon-btn" title="Export progress" aria-label="Export progress">⇩</button>
+        <label class="icon-btn file-btn" title="Import progress" aria-label="Import progress">
+          ⇧
+          <input id="importFile" type="file" accept="application/json" />
+        </label>
+        <button id="resetBtn" class="icon-btn danger" title="Reset progress" aria-label="Reset progress">↻</button>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <aside class="side-panel">
+        <section class="panel">
+          <div class="panel-title">เป้าหมาย</div>
+          <div class="segmented" role="tablist" aria-label="เลือกสายคาร์แร็ค">
+            <button class="segment active" data-target="advance">ทนทาน</button>
+            <button class="segment" data-target="balance">สมดุล</button>
+            <button class="segment" data-target="volante">ฉุกเฉิน</button>
+            <button class="segment" data-target="valor">แข็งแกร่ง</button>
+            <button class="segment" data-target="all">รวม</button>
+          </div>
+          <div id="shipAdvice" class="ship-advice"></div>
+        </section>
+
+        <section class="panel compact">
+          <div class="panel-title">เวลาที่มี</div>
+          <label class="field">
+            <span>เวลาเล่นต่อวัน</span>
+            <select id="timeBudget">
+              <option value="60">1 ชั่วโมง</option>
+              <option value="120" selected>2 ชั่วโมง</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>วันเล่นต่อสัปดาห์</span>
+            <input id="daysPerWeek" type="number" min="1" max="7" value="5" />
+          </label>
+          <label class="field">
+            <span>จำนวนงาน/วัน</span>
+            <input id="tasksPerDay" type="number" min="1" max="12" value="5" />
+          </label>
+        </section>
+
+        <section class="panel compact">
+          <div class="panel-title">แผน 7 วัน</div>
+          <div id="dailyPlan" class="daily-plan"></div>
+        </section>
+
+        <section class="panel compact">
+          <div class="panel-title">แหล่งข้อมูล</div>
+          <div id="sources" class="source-list"></div>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="stats-grid" id="stats"></div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="ค้นหาไอเทม / วิธีหา / หมายเหตุ" />
+          </div>
+          <select id="methodFilter" aria-label="กรองวิธีหา">
+            <option value="all">ทุกวิธีหา</option>
+          </select>
+          <select id="statusFilter" aria-label="กรองสถานะ">
+            <option value="missing">ของที่ยังขาด</option>
+            <option value="all">ทั้งหมด</option>
+            <option value="done">ครบแล้ว</option>
+          </select>
+        </div>
+
+        <section class="mission-control">
+          <section class="work-card process-card">
+            <div class="board-head">
+              <div>
+                <p class="eyebrow">Process</p>
+                <h2>ตอนนี้อยู่ขั้นไหน</h2>
+              </div>
+              <select id="processStep" aria-label="เลือกขั้นตอนทำเรือ"></select>
+            </div>
+            <div id="processView" class="process-view"></div>
+          </section>
+
+          <section class="work-card plan-card">
+            <div class="board-head">
+              <div>
+                <p class="eyebrow">Smart Plan</p>
+                <h2>วันนี้ควรทำอะไร</h2>
+              </div>
+              <span id="planSummary" class="plan-summary"></span>
+            </div>
+            <div id="aiBrief" class="ai-brief"></div>
+            <div id="todayPlan" class="today-plan"></div>
+            <div class="board-head compact-head material-head">
+              <div>
+                <p class="eyebrow">Materials</p>
+                <h2>ของที่ขาดตามวิธีหา</h2>
+              </div>
+            </div>
+            <div id="methodBuckets" class="method-buckets"></div>
+          </section>
+        </section>
+
+        <section class="support-board">
+          <section id="recommendations" class="recommendations"></section>
+          <div class="board-side">
+            <div class="board-head compact-head">
+              <div>
+                <p class="eyebrow">Route</p>
+                <h2>ลำดับการทำเรือ</h2>
+              </div>
+            </div>
+            <div id="routeSteps" class="route-steps"></div>
+          </div>
+        </section>
+
+        <details class="inventory-drawer" open>
+          <summary>รายการวัตถุดิบทั้งหมด</summary>
+          <section id="itemList" class="item-list"></section>
+        </details>
+      </section>
+    </main>
+
+    <template id="itemTemplate">
+      <article class="item-card">
+        <div class="item-art"></div>
+        <div class="item-main">
+          <div class="item-heading">
+            <div>
+              <p class="stage"></p>
+              <h2></h2>
+            </div>
+            <span class="status-pill"></span>
+          </div>
+          <div class="progress-line">
+            <div class="bar"><span></span></div>
+            <strong></strong>
+          </div>
+          <div class="item-controls">
+            <label>
+              <span>มีแล้ว</span>
+              <input class="owned-input" type="number" min="0" />
+            </label>
+            <button class="step-btn minus" title="ลดจำนวน" aria-label="ลดจำนวน">−</button>
+            <button class="step-btn plus" title="เพิ่มจำนวน" aria-label="เพิ่มจำนวน">+</button>
+            <button class="done-btn">ครบ</button>
+          </div>
+          <div class="item-detail">
+            <p class="how"></p>
+            <p class="note"></p>
+          </div>
+          <div class="raw-recipe"></div>
+        </div>
+      </article>
+    </template>
+
+    <script src="data/items.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
