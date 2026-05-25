@@ -1020,7 +1020,7 @@ h1 {
 }
 
 .recipe-flow.compact .ingredient-row {
-  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
 }
 
 .recipe-flow.compact .ingredient-row small {

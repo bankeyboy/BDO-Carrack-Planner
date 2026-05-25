@@ -432,9 +432,9 @@ function parsedProcessParts(item) {
 
 function recipeFlow(item, compact = false) {
   const processParts = parsedProcessParts(item);
+  const missing = itemMissing(item);
   if (processParts.length) {
     const title = processParts.find((part) => part.method)?.method || "แปรรูป";
-    const missing = itemMissing(item);
     return `
       <div class="recipe-flow ${compact ? "compact" : ""}">
         <div class="recipe-flow-title">${title}</div>
@@ -469,6 +469,8 @@ function recipeFlow(item, compact = false) {
           <div class="ingredient-row">
             ${ingredientIcon(chip)}
             <span>${chip}</span>
+            <strong>x1</strong>
+            ${missing ? `<small>รวม ${missing.toLocaleString("th-TH")}</small>` : ""}
           </div>`
         )
         .join("")}
