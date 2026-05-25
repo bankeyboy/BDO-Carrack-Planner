@@ -89,12 +89,12 @@ const ingredientImages = {
   ยางไม้อาคาเซีย: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00005013.webp",
   ยางไม้เอลเดอร์: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00005014.webp",
   เกล็ดของสัตว์ประหลาดทะเลรุนแรง: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008009.webp",
-  เกล็ดจระเข้ทะเล: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008015.webp",
-  กระดูกของสัตว์ประหลาดทะเลรุนแรง: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008010.webp",
+  เกล็ดจระเข้ทะเล: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008025.webp",
+  กระดูกของสัตว์ประหลาดทะเลรุนแรง: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008008.webp",
   น้ำยาเสริมความแข็งแกร่งแสงดาว: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008023.webp",
   น้ำยาเสริมความอ่อนโยนแสงดาว: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008024.webp",
   เกล็ดสัตว์ประหลาดทะเลรุนแรง: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008009.webp",
-  กระดูกสัตว์ประหลาดทะเลรุนแรง: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008010.webp",
+  กระดูกสัตว์ประหลาดทะเลรุนแรง: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00008008.webp",
   หลักฐานกวาดล้างกลุ่มโจรสลัดค็อกซ์: "https://bdocodex.com/items/new_icon/03_etc/03_quest_item/00043284.webp",
   ปืนใหญ่กลุ่มโจรสลัดค็อกซ์ที่เสีย: "https://bdocodex.com/items/new_icon/03_etc/03_quest_item/00043283.webp",
   เอ็นของคานน์: "https://bdocodex.com/items/new_icon/03_etc/07_productmaterial/00005808.webp",
@@ -449,6 +449,8 @@ function utilityIngredientIcon(label) {
 
 function ingredientIcon(label) {
   const normalized = normalizeItemName(label);
+  const exact = ingredientImages[normalized];
+  if (exact) return `<span class="ingredient-icon"><img src="${exact}" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>`;
   const fallback = Object.entries(ingredientImages)
     .sort((a, b) => b[0].length - a[0].length)
     .find(([name]) => normalized.includes(name) || name.includes(normalized));
