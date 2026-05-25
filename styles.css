@@ -1092,6 +1092,21 @@ h1 {
   object-fit: cover;
 }
 
+.ingredient-icon.utility {
+  background: #ecf7f1;
+  color: #087948;
+}
+
+.ingredient-icon.utility svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .recipe-flow.compact .ingredient-icon {
   border-color: rgba(255, 255, 255, 0.18);
   background: #ecf4ef;

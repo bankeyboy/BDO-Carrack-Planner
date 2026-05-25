@@ -424,6 +424,29 @@ function normalizeItemName(name) {
     .trim();
 }
 
+function utilityIngredientIcon(label) {
+  const icon = label.includes("ร้านค้า") || label.includes("อีกาดำ")
+    ? "shop"
+    : label.includes("แลกเปลี่ยน")
+    ? "exchange"
+    : label.includes("รายวัน") || label.includes("เควส")
+    ? "calendar"
+    : label.includes("คนงาน")
+    ? "worker"
+    : label.includes("ฐาน") || label.includes("เกาะ")
+    ? "location"
+    : "item";
+  const paths = {
+    shop: '<path d="M4 9h16l-1.2-4.5H5.2L4 9Z"/><path d="M6 9v10h12V9"/><path d="M9 19v-5h6v5"/>',
+    exchange: '<path d="M7 7h11l-3-3"/><path d="M18 17H7l3 3"/><path d="M18 7l-3 3"/><path d="M7 17l3-3"/>',
+    calendar: '<path d="M6 5h12v14H6z"/><path d="M6 9h12"/><path d="M9 3v4"/><path d="M15 3v4"/>',
+    worker: '<path d="M7 10a5 5 0 0 1 10 0"/><path d="M5 10h14"/><path d="M8 14a4 4 0 0 0 8 0"/><path d="M8 20h8"/>',
+    location: '<path d="M12 21s6-5.2 6-11a6 6 0 0 0-12 0c0 5.8 6 11 6 11Z"/><path d="M12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>',
+    item: '<path d="M12 3 4 7v10l8 4 8-4V7l-8-4Z"/><path d="M4 7l8 4 8-4"/><path d="M12 11v10"/>',
+  };
+  return `<span class="ingredient-icon utility ${icon}" title="${label}" aria-label="${label}"><svg viewBox="0 0 24 24" aria-hidden="true">${paths[icon]}</svg></span>`;
+}
+
 function ingredientIcon(label) {
   const normalized = normalizeItemName(label);
   const fallback = Object.entries(ingredientImages)
@@ -433,7 +456,7 @@ function ingredientIcon(label) {
   const found = itemLookupByName(normalized);
   const image = found ? itemImage(found) : "";
   if (image) return `<span class="ingredient-icon"><img src="${image}" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>`;
-  return `<span class="ingredient-icon text">${normalized.slice(0, 1)}</span>`;
+  return utilityIngredientIcon(normalized);
 }
 
 function parsedProcessParts(item) {
