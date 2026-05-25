@@ -39,6 +39,20 @@ const methodNames = {
   buy: "ซื้อ/ตลาด",
 };
 
+const searchAliases = {
+  crow: ["อีกาดำ", "เหรียญอีกาดำ", "เหรียญตราอีกาดำ", "ราวีเนีย"],
+  ravinia: ["ราวีเนีย", "อีกาดำ"],
+  chiro: ["ชีโล่", "อุปกรณ์คาแร็ค"],
+  carrack: ["คาแร็ค", "เรือคาร์แร็ค"],
+  caravel: ["เรือการค้า"],
+  galleass: ["เรือแกลลีย์"],
+  daily: ["รายวัน", "เควสรายวัน"],
+  barter: ["แลกเปลี่ยน", "เทรด", "ทะเล"],
+  craft: ["ผลิต", "แปรรูป", "หลอม", "ตัดฟืน", "ตากแห้ง"],
+  trade: ["แลกเปลี่ยน", "เทรด", "เรือการค้า"],
+  "+10": ["เสริมประสิทธิภาพ", "ตีบวก", "+10"],
+};
+
 const crowCoinPriceRules = [
   ["กาวที่มีความทรงจำของทะเลลึก", 800],
   ["ลำต้นพืชทะเลลึก", 600],
@@ -633,16 +647,68 @@ function targetItems() {
   });
 }
 
-function filteredItems() {
-  const query = state.query.trim().toLowerCase();
-  return targetItems().filter((item) => {
+function normalizeSearchText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}+]+/gu, "");
+}
+
+function itemSearchText(item) {
+  const method = itemMethod(item);
+  return `${item.name} ${item.stage} ${item.how} ${item.notes} ${methodNames[method] || ""} ${gearTarget(item)}`;
+}
+
+function queryTokens(query) {
+  return String(query || "")
+    .toLowerCase()
+    .split(/[\s,;/]+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+function matchesSearch(item, query) {
+  const tokens = queryTokens(query);
+  if (!tokens.length) return true;
+  const rawText = itemSearchText(item).toLowerCase();
+  const compactText = normalizeSearchText(rawText);
+  return tokens.every((token) => {
+    const variants = [token, ...(searchAliases[token] || [])].map(normalizeSearchText).filter(Boolean);
+    return variants.some((variant) => compactText.includes(variant) || rawText.includes(token));
+  });
+}
+
+function filteredItems(items = targetItems()) {
+  return items.filter((item) => {
     const missing = itemMissing(item);
     if (state.status === "missing" && missing <= 0) return false;
     if (state.status === "done" && missing > 0) return false;
     if (state.method !== "all" && itemMethod(item) !== state.method) return false;
-    if (!query) return true;
-    return `${item.name} ${item.stage} ${item.how} ${item.notes}`.toLowerCase().includes(query);
+    return matchesSearch(item, state.query);
   });
+}
+
+function activeFilterLabels() {
+  const labels = [];
+  if (state.query.trim()) labels.push(`คำค้น “${state.query.trim()}”`);
+  if (state.method !== "all") labels.push(methodNames[state.method] || "วิธีหาอื่น ๆ");
+  if (state.status === "missing") labels.push("ของที่ยังขาด");
+  if (state.status === "done") labels.push("ครบแล้ว");
+  return labels;
+}
+
+function renderSearchMeta(allItems, visibleItems) {
+  const root = document.querySelector("#searchMeta");
+  if (!root) return;
+  const labels = activeFilterLabels();
+  const hidden = allItems.length - visibleItems.length;
+  const hasQuery = state.query.trim().length > 0;
+  document.querySelector("#clearSearch")?.classList.toggle("show", hasQuery);
+  root.innerHTML = `
+    <span>ตัวกรองนี้ใช้กับรายการวัตถุดิบด้านล่าง</span>
+    <strong>พบ ${visibleItems.length.toLocaleString("th-TH")} / ${allItems.length.toLocaleString("th-TH")} รายการ</strong>
+    ${labels.length ? `<em>${labels.join(" · ")}</em>` : `<em>ยังไม่ใช้ตัวกรอง</em>`}
+    ${hidden > 0 ? `<small>ซ่อน ${hidden.toLocaleString("th-TH")} รายการ</small>` : ""}
+  `;
 }
 
 function renderStats(items) {
@@ -1079,7 +1145,11 @@ function renderItems(items) {
   const template = document.querySelector("#itemTemplate");
   list.innerHTML = "";
   if (!items.length) {
-    list.innerHTML = `<div class="empty">ไม่พบรายการตามตัวกรองนี้</div>`;
+    list.innerHTML = `
+      <div class="empty search-empty">
+        <strong>ไม่พบรายการตามตัวกรองนี้</strong>
+        <span>ลองลดเงื่อนไข เช่น เปลี่ยนสถานะเป็น “ทั้งหมด” หรือล้างคำค้น</span>
+      </div>`;
     return;
   }
 
@@ -1180,6 +1250,7 @@ function renderSources() {
 
 function render() {
   const items = targetItems();
+  const visibleItems = filteredItems(items);
   renderStats(items);
   renderShipAdvice(items);
   renderFocusItems(items);
@@ -1190,7 +1261,8 @@ function render() {
   renderProcessOptions(items);
   renderProcessView(items);
   renderPlan(items);
-  renderItems(filteredItems());
+  renderSearchMeta(items, visibleItems);
+  renderItems(visibleItems);
 }
 
 function bindEvents() {
@@ -1209,7 +1281,14 @@ function bindEvents() {
 
   document.querySelector("#searchInput").addEventListener("input", (event) => {
     state.query = event.target.value;
-    renderItems(filteredItems());
+    saveState();
+    render();
+  });
+  document.querySelector("#clearSearch")?.addEventListener("click", () => {
+    state.query = "";
+    document.querySelector("#searchInput").value = "";
+    saveState();
+    render();
   });
   document.querySelector("#methodFilter").addEventListener("change", (event) => {
     state.method = event.target.value;
@@ -1277,6 +1356,7 @@ function init() {
   document.querySelector("#timeBudget").value = state.timeBudget;
   document.querySelector("#daysPerWeek").value = state.daysPerWeek;
   document.querySelector("#tasksPerDay").value = state.tasksPerDay;
+  document.querySelector("#searchInput").value = state.query;
   document.querySelector("#statusFilter").value = state.status;
   renderTargetControls();
   renderMethodOptions();
